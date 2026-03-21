@@ -6,27 +6,57 @@ from torchvision import transforms
 from PIL import Image, ImageOps
 
 unseen_classes = [
-    "bat",
-    "cabin",
-    "cow",
-    "dolphin",
-    "door",
-    "giraffe",
-    "helicopter",
-    "mouse",
-    "pear",
-    "raccoon",
-    "rhinoceros",
-    "saw",
-    "scissors",
-    "seagull",
-    "skyscraper",
-    "songbird",
-    "sword",
-    "tree",
-    "wheelchair",
-    "windmill",
-    "window",
+    # "bat",
+    # "cabin",
+    # "cow",
+    # "dolphin",
+    # "door",
+    # "giraffe",
+    # "helicopter",
+    # "mouse",
+    # "pear",
+    # "raccoon",
+    # "rhinoceros",
+    # "saw",
+    # "scissors",
+    # "seagull",
+    # "skyscraper",
+    # "songbird",
+    # "sword",
+    # "tree",
+    # "wheelchair",
+    # "windmill",
+    # "window",
+    "banana" ,
+    "bus" ,
+    "tractor" ,
+    "suitcase" ,
+    "streetlight" ,
+    "telephone" ,
+    "bottle opener",
+    "canoe" ,
+    "fan" ,
+    "teacup" ,
+    "penguin" ,
+    "laptop" ,
+    "shoe" ,
+    "lighter" ,
+    "hot air balloon" ,
+    "pizza" ,
+    "brain" ,
+    "ant" ,
+    "t-shirt",
+    "trombone" ,
+    "windmill" ,
+    "snowboard" ,
+    "table" ,
+    "rollerblades" ,
+    "parachute" ,
+    "space shuttle",
+    "bridge" ,
+    "frying-pan",
+    "bread" ,
+    "horse" ,
 ]
 
 class Sketchy(torch.utils.data.Dataset):
@@ -60,9 +90,6 @@ class Sketchy(torch.utils.data.Dataset):
             self.all_sketches_path.extend(glob.glob(os.path.join(self.opts.data_dir, 'sketch', category, '*')))
             self.all_photos_path[category] = glob.glob(os.path.join(self.opts.data_dir, 'photo', category, '*'))
 
-        self.all_photos_path = {
-            k: v for k, v in self.all_photos_path.items() if len(v) > 0
-        }
         
     def __len__(self):
         return len(self.all_sketches_path)

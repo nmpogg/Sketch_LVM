@@ -60,6 +60,9 @@ class Sketchy(torch.utils.data.Dataset):
             self.all_sketches_path.extend(glob.glob(os.path.join(self.opts.data_dir, 'sketch', category, '*.png')))
             self.all_photos_path[category] = glob.glob(os.path.join(self.opts.data_dir, 'photo', category, '*.jpg'))
 
+        self.all_photos_path = {
+            k: v for k, v in self.all_photos_path.items() if len(v) > 0
+        }
     def __len__(self):
         return len(self.all_sketches_path)
         

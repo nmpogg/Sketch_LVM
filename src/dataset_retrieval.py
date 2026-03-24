@@ -6,57 +6,27 @@ from torchvision import transforms
 from PIL import Image, ImageOps
 
 unseen_classes = [
-    # "bat",
-    # "cabin",
-    # "cow",
-    # "dolphin",
-    # "door",
-    # "giraffe",
-    # "helicopter",
-    # "mouse",
-    # "pear",
-    # "raccoon",
-    # "rhinoceros",
-    # "saw",
-    # "scissors",
-    # "seagull",
-    # "skyscraper",
-    # "songbird",
-    # "sword",
-    # "tree",
-    # "wheelchair",
-    # "windmill",
-    # "window",
-    "banana" ,
-    "bus" ,
-    "tractor" ,
-    "suitcase" ,
-    "streetlight" ,
-    "telephone" ,
-    "bottle opener",
-    "canoe" ,
-    "fan" ,
-    "teacup" ,
-    "penguin" ,
-    "laptop" ,
-    "shoe" ,
-    "lighter" ,
-    "hot air balloon" ,
-    "pizza" ,
-    "brain" ,
-    "ant" ,
-    "t-shirt",
-    "trombone" ,
-    "windmill" ,
-    "snowboard" ,
-    "table" ,
-    "rollerblades" ,
-    "parachute" ,
-    "space shuttle",
-    "bridge" ,
-    "frying-pan",
-    "bread" ,
-    "horse" ,
+    "bat",
+    "cabin",
+    "cow",
+    "dolphin",
+    "door",
+    "giraffe",
+    "helicopter",
+    "mouse",
+    "pear",
+    "raccoon",
+    "rhinoceros",
+    "saw",
+    "scissors",
+    "seagull",
+    "skyscraper",
+    "songbird",
+    "sword",
+    "tree",
+    "wheelchair",
+    "windmill",
+    "window",
 ]
 
 class Sketchy(torch.utils.data.Dataset):
@@ -119,7 +89,6 @@ class Sketchy(torch.utils.data.Dataset):
                 sk_data, img_data, neg_data)
         else:
             return (sk_tensor, img_tensor, neg_tensor, category, filename)
-
     @staticmethod
     def data_transform(opts):
         dataset_transforms = transforms.Compose([
@@ -129,7 +98,48 @@ class Sketchy(torch.utils.data.Dataset):
         ])
         return dataset_transforms
 
+def normal_transform():
+    dataset_transforms = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+    return dataset_transforms
 
+class ValidDataset(torch.utils.data.Dataset):
+    def __init__(self, args, mode='photo'):
+        super(ValidDataset, self).__init__()
+        self.args = args
+        self.mode = mode
+        self.transform = normal_transform()
+        self.gzs_perc = 0.2
+        self.seed = 42
+        
+        self.global_categories = os.listdir(os.path.join(self.args.root, 'sketch'))
+        unseen_classes = set(unseen_classes)
+        unseen_classes = [c for c in self.global_categories if c in unseen_classes]
+        
+        unseen_paths = []
+        for category in unseen_classes:
+            if self.mode == 'photo':
+                unseen_paths.extend(glob.glob(os.path.join(self.args.root, 'photo', category, '*')))
+            else:
+                unseen_paths.extend(glob.glob(os.path.join(self.args.root, 'sketch', category, '*')))
+
+        self.paths = list(unseen_paths)
+            
+    def __getitem__(self, index):
+        filepath = self.paths[index]                
+        category = filepath.split(os.path.sep)[-2]
+        
+        image = ImageOps.pad(Image.open(filepath).convert('RGB'),  size=(self.args.max_size, self.args.max_size))
+        image_tensor = self.transform(image)
+        
+        return image_tensor, self.global_categories.index(category)
+    
+    def __len__(self):
+        return len(self.paths)
+    
 if __name__ == '__main__':
     from experiments.options import opts
     import tqdm

@@ -2,12 +2,13 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchmetrics.functional import retrieval_average_precision
+from torchmetrics.functional import retrieval_average_precision, retrieval_precision
 import pytorch_lightning as pl
 
 from src.clip import clip
 from experiments.options import opts
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 def freeze_model(m):
     m.requires_grad_(False)
 
@@ -35,6 +36,9 @@ class Model(pl.LightningModule):
             distance_function=self.distance_fn, margin=0.2)
 
         self.best_metric = -1e3
+        
+        self.val_step_outputs_sk = []
+        self.val_step_outputs_ph = []
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam([
@@ -61,37 +65,68 @@ class Model(pl.LightningModule):
         self.log('train_loss', loss)
         return loss
 
-    def validation_step(self, batch, batch_idx):
-        sk_tensor, img_tensor, neg_tensor, category = batch[:4]
-        img_feat = self.forward(img_tensor, dtype='image')
-        sk_feat = self.forward(sk_tensor, dtype='sketch')
-        neg_feat = self.forward(neg_tensor, dtype='image')
+    def validation_step(self, batch, batch_idx, dataloader_idx):
+        image_tensor, label = batch
+        if dataloader_idx == 0:
+            feat = self.forward(image_tensor, dtype='sketch')
+            self.val_step_outputs_sk.append((feat, label))
+        else:
+            feat = self.forward(image_tensor, dtype='image')
+            self.val_step_outputs_ph.append((feat, label))
+        
 
-        loss = self.loss_fn(sk_feat, img_feat, neg_feat)
-        self.log('val_loss', loss)
-        return sk_feat, img_feat, category
-
-    def validation_epoch_end(self, val_step_outputs):
-        Len = len(val_step_outputs)
-        if Len == 0:
-            return
-        query_feat_all = torch.cat([val_step_outputs[i][0] for i in range(Len)])
-        gallery_feat_all = torch.cat([val_step_outputs[i][1] for i in range(Len)])
-        all_category = np.array(sum([list(val_step_outputs[i][2]) for i in range(Len)], []))
-
-
+    def validation_epoch_end(self):
+        query_len = len(self.val_step_outputs_sk)
+        gallery_len = len(self.val_step_outputs_ph)
+        
+        query_feat_all = torch.cat([self.val_step_outputs_sk[i][0] for i in range(query_len)])
+        gallery_feat_all = torch.cat([self.val_step_outputs_ph[i][0] for i in range(gallery_len)])
+        
+        all_sketch_category = np.array(sum([list(self.val_step_outputs_sk[i][1].detach().cpu().numpy()) for i in range(query_len)], []))
+        all_photo_category = np.array(sum([list(self.val_step_outputs_ph[i][1].detach().cpu().numpy()) for i in range(gallery_len)], []))
+        
         ## mAP category-level SBIR Metrics
         gallery = gallery_feat_all
         ap = torch.zeros(len(query_feat_all))
+        precision = torch.zeros(len(query_feat_all))
+        if self.args.dataset == "sketchy_2":
+            map_k = 200
+            p_k = 200
+        else:
+            map_k = 0
+            if self.args.dataset == "quickdraw":
+                p_k = 200
+            else:
+                p_k = 100
+                
         for idx, sk_feat in enumerate(query_feat_all):
-            category = all_category[idx]
-            distance = -1*self.distance_fn(sk_feat.unsqueeze(0), gallery)
-            target = torch.zeros(len(gallery), dtype=torch.bool)
-            target[np.where(all_category == category)] = True
-            ap[idx] = retrieval_average_precision(distance.cpu(), target.cpu())
-        
+            category = all_sketch_category[idx]
+            distance = self.distance_fn(sk_feat.unsqueeze(0), gallery)
+            target = torch.zeros(len(gallery), dtype=torch.bool, device=device)
+            target[np.where(all_photo_category == category)] = True
+            
+            if map_k != 0:
+                top_k_actual = min(map_k, len(gallery)) 
+                ap[idx] = retrieval_average_precision(distance.cpu(), target.cpu(), top_k=top_k_actual)
+            else: 
+                ap[idx] = retrieval_average_precision(distance.cpu(), target.cpu())
+                
+            precision[idx] = retrieval_precision(distance.cpu(), target.cpu(), top_k=p_k)
+            
+            
         mAP = torch.mean(ap)
-        self.log('mAP', mAP)
+        precision = torch.mean(precision)
+        self.log("mAP", mAP, on_step=False, on_epoch=True)
         if self.global_step > 0:
             self.best_metric = self.best_metric if  (self.best_metric > mAP.item()) else mAP.item()
-        print ('mAP: {}, Best mAP: {}'.format(mAP.item(), self.best_metric))
+        
+        if map_k != 0:
+            print('mAP@{}: {}, P@{}: {}, Best mAP: {}'.format(map_k, mAP.item(), p_k, precision, self.best_metric))
+        else:
+            print('mAP@all: {}, P@{}: {}, Best mAP: {}'.format(mAP.item(), p_k, precision, self.best_metric))
+        train_loss = self.trainer.callback_metrics.get("train_loss", None)
+
+        if train_loss is not None:
+            print(f"Train loss (epoch avg): {train_loss.item():.6f}")
+        self.val_step_outputs_sk.clear()
+        self.val_step_outputs_ph.clear()

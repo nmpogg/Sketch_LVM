@@ -7,7 +7,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 from src.model_LN_prompt import Model
-from src.dataset_retrieval import Sketchy
+from src.dataset_retrieval import Sketchy, ValidDataset
 from experiments.options import opts
 
 if __name__ == '__main__':
@@ -18,6 +18,11 @@ if __name__ == '__main__':
 
     train_loader = DataLoader(dataset=train_dataset, batch_size=opts.batch_size, num_workers=opts.workers)
     val_loader = DataLoader(dataset=val_dataset, batch_size=opts.batch_size, num_workers=opts.workers)
+    
+    val_sketch = ValidDataset(opts, mode='sketch')
+    val_photo = ValidDataset(opts)
+    val_sketch_loader = DataLoader(dataset=val_sketch, batch_size=opts.test_batch_size, num_workers=opts.workers, shuffle=False)
+    val_photo_loader = DataLoader(dataset=val_photo, batch_size=opts.test_batch_size, num_workers=opts.workers, shuffle=False)
 
     logger = TensorBoardLogger('tb_logs', name=opts.exp_name)
 
@@ -35,7 +40,7 @@ if __name__ == '__main__':
         print ('resuming training from %s'%ckpt_path)
 
     trainer = Trainer(gpus=-1,
-        min_epochs=1, max_epochs=2000,
+        min_epochs=1, max_epochs=60,
         benchmark=True,
         logger=logger,
         # val_check_interval=10, 
@@ -52,4 +57,4 @@ if __name__ == '__main__':
         model = Model().load_from_checkpoint(ckpt_path)
 
     print ('beginning training...good luck...')
-    trainer.fit(model, train_loader, val_loader)
+    trainer.fit(model, train_loader, [val_sketch_loader, val_photo_loader])

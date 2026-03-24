@@ -39,14 +39,14 @@ if __name__ == '__main__':
     else:
         print ('resuming training from %s'%ckpt_path)
 
-    trainer = Trainer(gpus=-1,
+    trainer = Trainer(accelerator='gpu', devices=1,
         min_epochs=1, max_epochs=60,
         benchmark=True,
         logger=logger,
         # val_check_interval=10, 
         # accumulate_grad_batches=1,
         check_val_every_n_epoch=1,
-        resume_from_checkpoint=ckpt_path,
+        enable_progress_bar=True,
         callbacks=[checkpoint_callback]
     )
 

@@ -10,6 +10,8 @@ from collections import defaultdict
 from src.clip import clip
 from experiments.options import opts
 
+from src.utils import visualize_tsne
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 def freeze_model(m):
     m.requires_grad_(False)
@@ -95,35 +97,8 @@ class Model(pl.LightningModule):
             "sword",
             "windmill",
         ]
-
-        X = np.concatenate([torch.stack(v["sketch"]).cpu().numpy()
-                            for v in self.saved_features.values() if len(v["sketch"]) > 0], axis=0)
-        y = sum([[k] * len(v["sketch"])
-                for k, v in self.saved_features.items() if len(v["sketch"]) > 0], [])
-
-        Z = TSNE(n_components=2, random_state=42, perplexity=min(30, len(X)-1)).fit_transform(X)
-
-        plt.figure(figsize=(8, 6))
-        for cls in sorted(set(y)):
-            idx = [i for i, t in enumerate(y) if t == cls]
-            plt.scatter(
-                Z[idx, 0], Z[idx, 1],
-                s=20,
-                marker="^",                  # tam giác
-                label=visualize_classes[int(cls)]   # đổi số -> chữ
-            )
-
-        ax = plt.gca()
-        ax.set_xticks([])   # bỏ trục tọa độ
-        ax.set_yticks([])
-        for spine in ax.spines.values():   # bỏ đường viền
-            spine.set_visible(False)
-
-        plt.legend(frameon=False)
-        plt.tight_layout()
-        plt.savefig("tsne_sketch.png", dpi=300, bbox_inches="tight", pad_inches=0)
-        plt.close()
-        
+        visualize_tsne(visualize_classes, self.saved_features, mode="photo")
+        visualize_tsne(visualize_classes, self.saved_features, mode="sketch")
         
         # distance_fn = lambda x, y: F.cosine_similarity(x, y)
         # query_len = len(self.val_step_outputs_sk)

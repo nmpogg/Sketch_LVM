@@ -30,12 +30,12 @@ unseen_classes = [
 ]
 
 visualize_classes = [
-    "cow",
-    "raccoon",
-    "scissors",
-    "seagull",
+    "dolphin",
+    "helicopter",
+    "saw",
+    "songbird",
     "sword",
-    "tree",
+    "windmill",
 ]
 
 class Sketchy(torch.utils.data.Dataset):

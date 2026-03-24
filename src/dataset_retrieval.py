@@ -115,7 +115,7 @@ class ValidDataset(torch.utils.data.Dataset):
         self.gzs_perc = 0.2
         self.seed = 42
         
-        self.global_categories = os.listdir(os.path.join(self.args.root, 'sketch'))
+        self.global_categories = os.listdir(os.path.join(self.args.data_dir, 'sketch'))
         unseen_classes = set(unseen_classes)
         unseen_classes = [c for c in self.global_categories if c in unseen_classes]
         

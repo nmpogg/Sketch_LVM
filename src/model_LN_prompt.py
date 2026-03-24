@@ -90,12 +90,16 @@ class Model(pl.LightningModule):
     def on_validation_epoch_end(self):
         
         visualize_classes = [
+            "cow",
+            "raccoon",
+            "scissors",
+            "seagull",
+            "sword",
+            "tree",
             "dolphin",
             "helicopter",
             "saw",
-            "songbird",
             "sword",
-            "windmill",
         ]
         visualize_tsne(visualize_classes, self.saved_features, mode="photo")
         visualize_tsne(visualize_classes, self.saved_features, mode="sketch")

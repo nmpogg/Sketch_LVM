@@ -116,8 +116,8 @@ class ValidDataset(torch.utils.data.Dataset):
         self.seed = 42
         
         self.global_categories = os.listdir(os.path.join(self.args.data_dir, 'sketch'))
-        unseen_classes = set(unseen_classes)
-        unseen_classes = [c for c in self.global_categories if c in unseen_classes]
+        # unseen_classes = set(unseen_classes)
+        # unseen_classes = [c for c in self.global_categories if c in unseen_classes]
         
         unseen_paths = []
         for category in unseen_classes:

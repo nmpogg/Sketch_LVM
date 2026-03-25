@@ -22,7 +22,7 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
 
         Z = TSNE(n_components=2, random_state=42, perplexity=min(30, len(X)-1)).fit_transform(X)
 
-        plt.figure(figsize=(12, 10))
+        plt.figure(figsize=(8, 6))
         for cls in sorted(set(y)):
             idx = [i for i, t in enumerate(y) if t == cls]
             name = visualize_classes[int(cls)]
@@ -55,7 +55,7 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
 
         Z = TSNE(n_components=2, random_state=42, perplexity=min(30, len(X)-1)).fit_transform(X)
 
-        plt.figure(figsize=(12, 10))
+        plt.figure(figsize=(8, 6))
         for cls in sorted(set(y)):
             idx = [i for i, t in enumerate(y) if t == cls]
             name = visualize_classes[int(cls)]

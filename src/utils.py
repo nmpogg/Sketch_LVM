@@ -31,7 +31,7 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
                 s=20,
                 c=label_to_color[name],
                 marker="o",              
-                label=name,  # đổi số -> chữ
+                label=name, 
                 edgecolors="white",
                 linewidths=0.5
             )

@@ -42,7 +42,7 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
         for spine in ax.spines.values():   # bỏ đường viền
             spine.set_visible(False)
 
-        plt.legend(frameon=False)
+        plt.legend(frameon=True)
         plt.tight_layout()
         plt.savefig("frozen_clip_sketch.png", dpi=300, bbox_inches="tight", pad_inches=0)
         plt.close()
@@ -75,7 +75,7 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
         for spine in ax.spines.values():   # bỏ đường viền
             spine.set_visible(False)
 
-        plt.legend(frameon=False)
+        plt.legend(frameon=True)
         plt.tight_layout()
         plt.savefig("frozen_clip_photo.png", dpi=300, bbox_inches="tight", pad_inches=0)
         plt.close()

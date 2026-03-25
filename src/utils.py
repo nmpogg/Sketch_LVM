@@ -44,7 +44,7 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
 
         plt.legend(frameon=True)
         plt.tight_layout()
-        plt.savefig("frozen_clip_sketch.png", dpi=100, bbox_inches="tight", pad_inches=0)
+        plt.savefig("frozen_clip_sketch.png", dpi=300, bbox_inches="tight", pad_inches=0)
         plt.close()
     
     else:
@@ -77,5 +77,5 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
 
         plt.legend(frameon=True)
         plt.tight_layout()
-        plt.savefig("frozen_clip_photo.png", dpi=100, bbox_inches="tight", pad_inches=0)
+        plt.savefig("frozen_clip_photo.png", dpi=300, bbox_inches="tight", pad_inches=0)
         plt.close()

@@ -49,7 +49,7 @@ class Model(pl.LightningModule):
         optimizer = torch.optim.Adam([
             {'params': self.clip.parameters(), 'lr': self.opts.clip_LN_lr},
             {'params': [self.sk_prompt] + [self.img_prompt], 'lr': self.opts.prompt_lr}])
-        # return optimizer
+        return optimizer
 
     def forward(self, data, dtype='image'):
         if dtype == 'image':
@@ -75,11 +75,11 @@ class Model(pl.LightningModule):
     def validation_step(self, batch, batch_idx, dataloader_idx):
         image_tensor, label = batch
         if dataloader_idx == 0:
-            feat = self.forward(image_tensor, dtype='sketch')
+            feat = self.clip.encode_image(image_tensor)
             modality = "sketch"
             self.val_step_outputs_sk.append((feat, label))
         else:
-            feat = self.forward(image_tensor, dtype='image')
+            feat = self.clip.encode_image(image_tensor)
             modality = "photo"
             self.val_step_outputs_ph.append((feat, label))
         

@@ -6,9 +6,9 @@ import torch
 def visualize_tsne(visualize_classes, saved_features, mode="photo"):
     label_to_color = {
         "cow": "#E2514A",
-        "raccoon": "#E29A4E",
-        "scissors": "#F0D97A",
-        "seagull": "#D5E46D",
+        "raccoon": "#F5AA53",
+        "scissors": "#EDD471",
+        "seagull": "#D9E77F",
         "sword": "#8ACA8F",
         "tree": "#4DA3B5",
     }

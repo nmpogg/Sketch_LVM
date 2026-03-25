@@ -36,10 +36,6 @@ visualize_classes = [
     "seagull",
     "sword",
     "tree",
-    "dolphin",
-    "helicopter",
-    "saw",
-    "sword",
 ]
 
 class Sketchy(torch.utils.data.Dataset):
@@ -133,8 +129,8 @@ class ValidDataset(torch.utils.data.Dataset):
         # unseen_classes = [c for c in self.global_categories if c in unseen_classes]
         
         unseen_paths = []
-        for category in unseen_classes:
-        # for category in visualize_classes:
+        # for category in unseen_classes:
+        for category in visualize_classes:
             if self.mode == 'photo':
                 unseen_paths.extend(glob.glob(os.path.join(self.args.data_dir, 'photo', category, '*')))
             else:

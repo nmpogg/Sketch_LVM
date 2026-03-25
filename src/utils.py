@@ -4,6 +4,16 @@ from sklearn.manifold import TSNE
 import torch
 
 def visualize_tsne(visualize_classes, saved_features, mode="photo"):
+    label_to_color = {
+        "cow": "#E4574E",
+        "raccoon": "#E49E58",
+        "scissors": "#FDE79D",
+        "seagull": "#E2EE87",
+        "sword": "#8DCC93",
+        "tree": "#4999AD",
+    }
+
+
     if mode == "sketch":
         X = np.concatenate([torch.stack(v["sketch"]).cpu().numpy()
                             for v in saved_features.values() if len(v["sketch"]) > 0], axis=0)
@@ -15,11 +25,15 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
         plt.figure(figsize=(8, 6))
         for cls in sorted(set(y)):
             idx = [i for i, t in enumerate(y) if t == cls]
+            name = visualize_classes[int(cls)]
             plt.scatter(
                 Z[idx, 0], Z[idx, 1],
                 s=20,
-                marker="^",                  # tam giác
-                label=visualize_classes[int(cls)]   # đổi số -> chữ
+                c=label_to_color[name],
+                marker="o",              
+                label=name,  # đổi số -> chữ
+                edgecolors="white",
+                linewidths=0.5
             )
 
         ax = plt.gca()
@@ -30,7 +44,7 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
 
         plt.legend(frameon=False)
         plt.tight_layout()
-        plt.savefig("cvpr_sketch.png", dpi=300, bbox_inches="tight", pad_inches=0)
+        plt.savefig("frozen_clip_sketch.png", dpi=300, bbox_inches="tight", pad_inches=0)
         plt.close()
     
     else:
@@ -44,11 +58,15 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
         plt.figure(figsize=(8, 6))
         for cls in sorted(set(y)):
             idx = [i for i, t in enumerate(y) if t == cls]
+            name = visualize_classes[int(cls)]
             plt.scatter(
                 Z[idx, 0], Z[idx, 1],
                 s=20,
-                marker="o",                  # hình tròn
-                label=visualize_classes[int(cls)]   # đổi số -> chữ
+                c=label_to_color[name],
+                marker="o",              
+                label=name,  # đổi số -> chữ
+                edgecolors="white",
+                linewidths=0.5
             )
 
         ax = plt.gca()
@@ -59,5 +77,5 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
 
         plt.legend(frameon=False)
         plt.tight_layout()
-        plt.savefig("cvpr_photo.png", dpi=300, bbox_inches="tight", pad_inches=0)
+        plt.savefig("frozen_clip_photo.png", dpi=300, bbox_inches="tight", pad_inches=0)
         plt.close()

@@ -29,11 +29,11 @@ class Model(pl.LightningModule):
 
         self.opts = opts
         self.clip, _ = clip.load('ViT-B/32', device=self.device)
-        self.clip.apply(freeze_all_but_bn)
+        self.clip.apply(freeze_model)
 
         # Prompt Engineering
-        self.sk_prompt = nn.Parameter(torch.randn(self.opts.n_prompts, self.opts.prompt_dim))
-        self.img_prompt = nn.Parameter(torch.randn(self.opts.n_prompts, self.opts.prompt_dim))
+        # self.sk_prompt = nn.Parameter(torch.randn(self.opts.n_prompts, self.opts.prompt_dim))
+        # self.img_prompt = nn.Parameter(torch.randn(self.opts.n_prompts, self.opts.prompt_dim))
 
         self.distance_fn = lambda x, y: 1.0 - F.cosine_similarity(x, y)
         self.loss_fn = nn.TripletMarginWithDistanceLoss(
@@ -48,16 +48,19 @@ class Model(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam([
             {'params': self.clip.parameters(), 'lr': self.opts.clip_LN_lr},
-            {'params': [self.sk_prompt] + [self.img_prompt], 'lr': self.opts.prompt_lr}])
+            ])
+            # {'params': [self.sk_prompt] + [self.img_prompt], 'lr': self.opts.prompt_lr}])
         return optimizer
 
     def forward(self, data, dtype='image'):
         if dtype == 'image':
-            feat = self.clip.encode_image(
-                data, self.img_prompt.expand(data.shape[0], -1, -1))
+            # feat = self.clip.encode_image(
+            #     data, self.img_prompt.expand(data.shape[0], -1, -1))
+            feat = self.clip.encode_image(data)
         else:
-            feat = self.clip.encode_image(
-                data, self.sk_prompt.expand(data.shape[0], -1, -1))
+            # feat = self.clip.encode_image(
+            #     data, self.sk_prompt.expand(data.shape[0], -1, -1))
+            feat = self.clip.encode_image(data)
         return feat
 
     def training_step(self, batch, batch_idx):
@@ -120,13 +123,9 @@ class Model(pl.LightningModule):
             "seagull",
             "sword",
             "tree",
-            "dolphin",
-            "helicopter",
-            "saw",
-            "sword",
         ]
-        visualize_tsne(unseen_classes, self.saved_features, mode="photo")
-        visualize_tsne(unseen_classes, self.saved_features, mode="sketch")
+        visualize_tsne(visualize_classes, self.saved_features, mode="photo")
+        visualize_tsne(visualize_classes, self.saved_features, mode="sketch")
         
         # distance_fn = lambda x, y: F.cosine_similarity(x, y)
         # query_len = len(self.val_step_outputs_sk)

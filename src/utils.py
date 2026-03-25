@@ -22,7 +22,7 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
 
         Z = TSNE(n_components=2, random_state=42, perplexity=min(30, len(X)-1)).fit_transform(X)
 
-        plt.figure(figsize=(8, 6))
+        plt.figure(figsize=(12, 10))
         for cls in sorted(set(y)):
             idx = [i for i, t in enumerate(y) if t == cls]
             name = visualize_classes[int(cls)]
@@ -44,7 +44,7 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
 
         plt.legend(frameon=True)
         plt.tight_layout()
-        plt.savefig("frozen_clip_sketch.png", dpi=300, bbox_inches="tight", pad_inches=0)
+        plt.savefig("frozen_clip_sketch.png", dpi=100, bbox_inches="tight", pad_inches=0)
         plt.close()
     
     else:
@@ -55,7 +55,7 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
 
         Z = TSNE(n_components=2, random_state=42, perplexity=min(30, len(X)-1)).fit_transform(X)
 
-        plt.figure(figsize=(8, 6))
+        plt.figure(figsize=(12, 10))
         for cls in sorted(set(y)):
             idx = [i for i, t in enumerate(y) if t == cls]
             name = visualize_classes[int(cls)]
@@ -77,5 +77,5 @@ def visualize_tsne(visualize_classes, saved_features, mode="photo"):
 
         plt.legend(frameon=True)
         plt.tight_layout()
-        plt.savefig("frozen_clip_photo.png", dpi=300, bbox_inches="tight", pad_inches=0)
+        plt.savefig("frozen_clip_photo.png", dpi=100, bbox_inches="tight", pad_inches=0)
         plt.close()

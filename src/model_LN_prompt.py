@@ -75,11 +75,11 @@ class Model(pl.LightningModule):
     def validation_step(self, batch, batch_idx, dataloader_idx):
         image_tensor, label = batch
         if dataloader_idx == 0:
-            feat = self.clip.encode_image(image_tensor)
+            feat = self.forward(image_tensor, dtype='sketch')
             modality = "sketch"
             self.val_step_outputs_sk.append((feat, label))
         else:
-            feat = self.clip.encode_image(image_tensor)
+            feat = self.forward(image_tensor, dtype='image')
             modality = "photo"
             self.val_step_outputs_ph.append((feat, label))
         

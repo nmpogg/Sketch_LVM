@@ -129,8 +129,8 @@ class ValidDataset(torch.utils.data.Dataset):
         # unseen_classes = [c for c in self.global_categories if c in unseen_classes]
         
         unseen_paths = []
-        # for category in unseen_classes:
-        for category in visualize_classes:
+        for category in unseen_classes:
+        # for category in visualize_classes:
             if self.mode == 'photo':
                 unseen_paths.extend(glob.glob(os.path.join(self.args.data_dir, 'photo', category, '*')))
             else:
@@ -145,8 +145,8 @@ class ValidDataset(torch.utils.data.Dataset):
         image = ImageOps.pad(Image.open(filepath).convert('RGB'),  size=(self.args.max_size, self.args.max_size))
         image_tensor = self.transform(image)
         
-        # return image_tensor, unseen_classes.index(category)
-        return image_tensor, visualize_classes.index(category)
+        return image_tensor, unseen_classes.index(category)
+        # return image_tensor, visualize_classes.index(category)
     
     def __len__(self):
         return len(self.paths)

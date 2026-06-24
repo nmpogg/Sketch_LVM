@@ -53,13 +53,13 @@ class Model(pl.LightningModule):
 
     def forward(self, data, dtype='image'):
         if dtype == 'image':
-            # feat = self.clip.encode_image(
-            #     data, self.img_prompt.expand(data.shape[0], -1, -1))
-            feat = self.clip.encode_image(data)
+            feat = self.clip.encode_image(
+                data, self.img_prompt.expand(data.shape[0], -1, -1))
+            # feat = self.clip.encode_image(data)
         else:
-            # feat = self.clip.encode_image(
-            #     data, self.sk_prompt.expand(data.shape[0], -1, -1))
-            feat = self.clip.encode_image(data)
+            feat = self.clip.encode_image(
+                data, self.sk_prompt.expand(data.shape[0], -1, -1))
+            # feat = self.clip.encode_image(data)
         return feat
 
     def training_step(self, batch, batch_idx):
@@ -123,55 +123,55 @@ class Model(pl.LightningModule):
             "sword",
             "tree",
         ]
-        visualize_tsne(visualize_classes, self.saved_features, mode="photo")
-        visualize_tsne(visualize_classes, self.saved_features, mode="sketch")
+        visualize_tsne(unseen_classes, self.saved_features, mode="photo")
+        visualize_tsne(unseen_classes, self.saved_features, mode="sketch")
         
-        # distance_fn = lambda x, y: F.cosine_similarity(x, y)
-        # query_len = len(self.val_step_outputs_sk)
-        # gallery_len = len(self.val_step_outputs_ph)
+        distance_fn = lambda x, y: F.cosine_similarity(x, y)
+        query_len = len(self.val_step_outputs_sk)
+        gallery_len = len(self.val_step_outputs_ph)
         
-        # query_feat_all = torch.cat([self.val_step_outputs_sk[i][0] for i in range(query_len)])
-        # gallery_feat_all = torch.cat([self.val_step_outputs_ph[i][0] for i in range(gallery_len)])
+        query_feat_all = torch.cat([self.val_step_outputs_sk[i][0] for i in range(query_len)])
+        gallery_feat_all = torch.cat([self.val_step_outputs_ph[i][0] for i in range(gallery_len)])
         
-        # all_sketch_category = np.array(sum([list(self.val_step_outputs_sk[i][1].detach().cpu().numpy()) for i in range(query_len)], []))
-        # all_photo_category = np.array(sum([list(self.val_step_outputs_ph[i][1].detach().cpu().numpy()) for i in range(gallery_len)], []))
+        all_sketch_category = np.array(sum([list(self.val_step_outputs_sk[i][1].detach().cpu().numpy()) for i in range(query_len)], []))
+        all_photo_category = np.array(sum([list(self.val_step_outputs_ph[i][1].detach().cpu().numpy()) for i in range(gallery_len)], []))
         
-        # ## mAP category-level SBIR Metrics
-        # gallery = gallery_feat_all
-        # ap = torch.zeros(len(query_feat_all))
-        # precision = torch.zeros(len(query_feat_all))
-        # map_k = 200
-        # p_k = 200
+        ## mAP category-level SBIR Metrics
+        gallery = gallery_feat_all
+        ap = torch.zeros(len(query_feat_all))
+        precision = torch.zeros(len(query_feat_all))
+        map_k = 200
+        p_k = 200
                 
-        # for idx, sk_feat in enumerate(query_feat_all):
-        #     category = all_sketch_category[idx]
-        #     distance = distance_fn(sk_feat.unsqueeze(0), gallery)
-        #     target = torch.zeros(len(gallery), dtype=torch.bool, device=device)
-        #     target[np.where(all_photo_category == category)] = True
+        for idx, sk_feat in enumerate(query_feat_all):
+            category = all_sketch_category[idx]
+            distance = distance_fn(sk_feat.unsqueeze(0), gallery)
+            target = torch.zeros(len(gallery), dtype=torch.bool, device=device)
+            target[np.where(all_photo_category == category)] = True
             
-        #     if map_k != 0:
-        #         top_k_actual = min(map_k, len(gallery)) 
-        #         ap[idx] = retrieval_average_precision(distance.cpu(), target.cpu(), top_k=top_k_actual)
-        #     else: 
-        #         ap[idx] = retrieval_average_precision(distance.cpu(), target.cpu())
+            if map_k != 0:
+                top_k_actual = min(map_k, len(gallery)) 
+                ap[idx] = retrieval_average_precision(distance.cpu(), target.cpu(), top_k=top_k_actual)
+            else: 
+                ap[idx] = retrieval_average_precision(distance.cpu(), target.cpu())
                 
-        #     precision[idx] = retrieval_precision(distance.cpu(), target.cpu(), top_k=p_k)
+            precision[idx] = retrieval_precision(distance.cpu(), target.cpu(), top_k=p_k)
             
             
-        # mAP = torch.mean(ap)
-        # precision = torch.mean(precision)
-        # self.log("mAP", mAP, on_step=False, on_epoch=True)
-        # if self.global_step > 0:
-        #     self.best_metric = self.best_metric if  (self.best_metric > mAP.item()) else mAP.item()
+        mAP = torch.mean(ap)
+        precision = torch.mean(precision)
+        self.log("mAP", mAP, on_step=False, on_epoch=True)
+        if self.global_step > 0:
+            self.best_metric = self.best_metric if  (self.best_metric > mAP.item()) else mAP.item()
         
-        # if map_k != 0:
-        #     print('mAP@{}: {}, P@{}: {}, Best mAP: {}'.format(map_k, mAP.item(), p_k, precision, self.best_metric))
-        # else:
-        #     print('mAP@all: {}, P@{}: {}, Best mAP: {}'.format(mAP.item(), p_k, precision, self.best_metric))
-        # train_loss = self.trainer.callback_metrics.get("train_loss", None)
+        if map_k != 0:
+            print('mAP@{}: {}, P@{}: {}, Best mAP: {}'.format(map_k, mAP.item(), p_k, precision, self.best_metric))
+        else:
+            print('mAP@all: {}, P@{}: {}, Best mAP: {}'.format(mAP.item(), p_k, precision, self.best_metric))
+        train_loss = self.trainer.callback_metrics.get("train_loss", None)
 
-        # if train_loss is not None:
-        #     print(f"Train loss (epoch avg): {train_loss.item():.6f}")
+        if train_loss is not None:
+            print(f"Train loss (epoch avg): {train_loss.item():.6f}")
         self.val_step_outputs_sk.clear()
         self.val_step_outputs_ph.clear()
         self.saved_features.clear()

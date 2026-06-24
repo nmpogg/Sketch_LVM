@@ -57,4 +57,6 @@ if __name__ == '__main__':
         model = Model().load_from_checkpoint(ckpt_path)
 
     print ('beginning training...good luck...')
-    trainer.validate(model, dataloaders=[val_sketch_loader, val_photo_loader])
+    # trainer.validate(model, dataloaders=[val_sketch_loader, val_photo_loader])
+    # Bắt đầu quá trình training
+    trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=[val_sketch_loader, val_photo_loader])

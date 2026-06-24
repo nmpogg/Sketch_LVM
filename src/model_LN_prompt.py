@@ -123,8 +123,8 @@ class Model(pl.LightningModule):
             "sword",
             "tree",
         ]
-        visualize_tsne(unseen_classes, self.saved_features, mode="photo")
-        visualize_tsne(unseen_classes, self.saved_features, mode="sketch")
+        # visualize_tsne(unseen_classes, self.saved_features, mode="photo")
+        # visualize_tsne(unseen_classes, self.saved_features, mode="sketch")
         
         distance_fn = lambda x, y: F.cosine_similarity(x, y)
         query_len = len(self.val_step_outputs_sk)

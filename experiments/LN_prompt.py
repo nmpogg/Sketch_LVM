@@ -40,7 +40,7 @@ if __name__ == '__main__':
         print ('resuming training from %s'%ckpt_path)
 
     trainer = Trainer(accelerator='gpu', devices=1,
-        min_epochs=1, max_epochs=30,
+        min_epochs=1, max_epochs=50,
         benchmark=True,
         logger=logger,
         # val_check_interval=10, 
@@ -50,13 +50,17 @@ if __name__ == '__main__':
         callbacks=[checkpoint_callback]
     )
 
-    if ckpt_path is None:
-        model = Model()
-    else:
-        print ('resuming training from %s'%ckpt_path)
-        model = Model().load_from_checkpoint(ckpt_path)
+    # if ckpt_path is None:
+    #     model = Model()
+    # else:
+    #     print ('resuming training from %s'%ckpt_path)
+    #     model = Model().load_from_checkpoint(ckpt_path)
+    model = Model()
 
     print ('beginning training...good luck...')
     # trainer.validate(model, dataloaders=[val_sketch_loader, val_photo_loader])
     # Bắt đầu quá trình training
-    trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=[val_sketch_loader, val_photo_loader])
+    trainer.fit(model, 
+                train_dataloaders=train_loader, 
+                val_dataloaders=[val_sketch_loader, val_photo_loader], 
+                ckpt_path=ckpt_path)

@@ -47,7 +47,8 @@ if __name__ == '__main__':
         # accumulate_grad_batches=1,
         check_val_every_n_epoch=1,
         enable_progress_bar=True,
-        callbacks=[checkpoint_callback]
+        callbacks=[checkpoint_callback],
+        num_sanity_val_steps=-1
     )
 
     # if ckpt_path is None:
